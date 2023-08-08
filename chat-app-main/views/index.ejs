@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bootstrap demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    .names small {
+      position: relative;
+      margin-left: 20px;
+    }
+
+    .small,
+    small {
+      font-size: .875em;
+    }
+
+    small {
+      display: block;
+    }
+
+    *,
+    ::after,
+    ::before {
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+
+<body style="position: relative;display: flex;">
+  <div id="overlay"
+    style="display: flex ; align-items: center; justify-content: center; z-index: 99; width: 100vw ; height: 100vh; background-color: black; position: fixed;">
+    <div class="card " style="width: 30vw;">
+      <h5 class="card-header">SheryChat</h5>
+      <div class="card-body">
+        <h5 class="card-title">Special title treatment</h5>
+        <br>
+        <div class="input-group flex-nowrap">
+
+          <input id="naam" type="text" class="form-control" placeholder="Username" aria-label="Username"
+            aria-describedby="addon-wrapping">
+        </div>
+        <br>
+        <button id="enter" type="button" class="btn btn-success">Success</button>
+      </div>
+    </div>
+  </div>
+  <div id="div">
+    <!-- message displayed box -->
+    <div class="container-sm my-5" id="displaybox"
+      style="height:70vh ; overflow: auto; width: 75vw; border: 2px solid green;position: absolute; left: 5%; ">
+
+
+    </div>
+    <!-- textarea -->
+    <div class="input-group mb-3" style="position: absolute; width: 75vw; top: 78vh; left: 5%;">
+
+      <!--msg input -->
+
+      <textarea type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username"
+        style="resize: none;" aria-describedby="button-addon2"></textarea>
+      <button class="btn btn-outline-secondary" id="send" type="button" id="button-addon2"><i
+          class="ri-send-plane-2-fill"></i></button>
+    </div>
+
+  </div>
+  <!-- online user -->
+
+  <div style="min-width: 10vw;z-index: 99;right: 5%;margin-top: 3%;position: absolute;" id="online"
+    class="p-2 card online">
+    <small>Online (<span id="onlinenum">0</span>)</small>
+    <div class="names"
+      style="width: 10vw;   position: relative;  display : flex ;  justify-content : space-between; align-items : center;">
+    </div>
+  </div>
+  <!-- bootstrap cdn -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8"
+    crossorigin="anonymous"></script>
+  <!-- socketio cdn -->
+  <script src="https://cdn.socket.io/4.5.0/socket.io.min.js" integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k" crossorigin="anonymous"></script>
+  <!-- socket connection -->
+  <script>
+    var naam = "";
+    var socket = io();
+
+    document.querySelector("#send").addEventListener("click", function () {
+      if (document.querySelector("textarea").value.trim().length > 0) {
+        socket.emit("msg", document.querySelector("textarea").value);
+        document.querySelector("textarea").value = "";
+      }
+    });
+
+    document.querySelector("#enter").addEventListener("click", function () {
+      if (document.querySelector("#naam").value.trim().length > 0) {
+        naam = document.querySelector("#naam").value;
+        socket.emit("naam", document.querySelector("#naam").value);
+        document.querySelector("#overlay").style.display = " none";
+        console.log(naam);
+      }
+    })
+
+    socket.on('msg', function (message) {
+      if (naam == message.username) {
+        document.querySelector("#displaybox").innerHTML += `<div class="alert alert-success mt-2" style="width: 50%;  float : right ;
+      clear : both ;" role="alert">
+      ${message.message}
+      </div> `
+
+      }
+      else {
+        document.querySelector("#displaybox").innerHTML += `<div class="alert alert-secondary mt-2" style="width: 50%; float : left ;
+      clear : both ; " role="alert">
+        ${message.message}
+      </div>
+      `
+      }
+
+
+
+    })
+
+    socket.on("online", function (data) {
+      var clutter = `<hr>`;
+      document.querySelector("#onlinenum").textContent = data.data.length;
+      data.data.forEach(function (elem) {
+        clutter += `<small>${elem}</small> <div style="width: 10px; height: 10px; background-color: green;border-radius: 50%;  " id="circle"></div>   <br>`;
+      });
+      document.querySelector(".names").innerHTML = clutter;
+    })
+    document.querySelector("#online")
+      .addEventListener("click", function () {
+        var flag = 0;
+        if (flag == 0) {
+          document.querySelector(".names").style.display = "initial";
+          flag++;
+        }
+        else if (flag == 1) {
+          document.querySelector(".names").style.display = "none";
+          flag--;
+
+        }
+      })
+
+
+  </script>
+
+</body>
+
+</html>
